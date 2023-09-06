@@ -168,10 +168,12 @@ func (s *Server) registerBaseHandler() {
 
 		rspData, err := runtime.GetActorRuntimeInstanceContext().InvokeActorMethod(ctx, actorType, actorID, methodName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
+			fmt.Printf("actor type %s not found. err: %v\n", actorType, err)
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 		if err != actorErr.Success {
+			fmt.Printf("invoking actor failed with: %v\n", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
