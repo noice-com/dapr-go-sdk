@@ -324,6 +324,8 @@ func suiteMethod(method reflect.Method) (*MethodType, error) {
 		}
 	}
 
+	fmt.Printf("storing method %s, argsType = %+v, replyType = %+v, ctxType = %+v\n", mname, argsType, replyType, ctxType)
+
 	return &MethodType{method: method, argsType: argsType, replyType: replyType, ctxType: ctxType}, nil
 }
 
