@@ -17,6 +17,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -159,6 +160,8 @@ func (s *Server) registerBaseHandler() {
 		ctx := r.Context()
 		id := r.Header.Get(api.ReentrancyIDKey)
 		ctx = api.ContextWithReentrancyID(ctx, id)
+
+		fmt.Printf("invoke method %s of actor %s with data %s\n", methodName, fmt.Sprintf("%s/%s", actorType, actorID), string(reqData))
 
 		rspData, err := runtime.GetActorRuntimeInstanceContext().InvokeActorMethod(ctx, actorType, actorID, methodName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
