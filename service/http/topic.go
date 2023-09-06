@@ -118,6 +118,7 @@ func (in topicEventJSON) getData() (data any, rawData []byte) {
 func (s *Server) registerBaseHandler() {
 	// register subscribe handler
 	f := func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("/dapr/subscribe called")
 		subs := make([]*internal.TopicSubscription, 0, len(s.topicRegistrar))
 		for _, s := range s.topicRegistrar {
 			subs = append(subs, s.Subscription)
@@ -132,12 +133,14 @@ func (s *Server) registerBaseHandler() {
 
 	// register health check handler
 	fHealth := func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("/healthz called")
 		w.WriteHeader(http.StatusOK)
 	}
 	s.mux.Get("/healthz", fHealth)
 
 	// register actor config handler
 	fRegister := func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("/dapr/config called")
 		data, err := runtime.GetActorRuntimeInstanceContext().GetJSONSerializedConfig()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -181,6 +184,9 @@ func (s *Server) registerBaseHandler() {
 	fDelete := func(w http.ResponseWriter, r *http.Request) {
 		actorType := chi.URLParam(r, "actorType")
 		actorID := chi.URLParam(r, "actorId")
+
+		fmt.Printf("deactivate actor %s/%s\n", actorType, actorID)
+
 		err := runtime.GetActorRuntimeInstanceContext().Deactivate(r.Context(), actorType, actorID)
 		if err == actorErr.ErrActorTypeNotFound || err == actorErr.ErrActorIDNotFound {
 			w.WriteHeader(http.StatusNotFound)
@@ -198,6 +204,9 @@ func (s *Server) registerBaseHandler() {
 		actorID := chi.URLParam(r, "actorId")
 		reminderName := chi.URLParam(r, "reminderName")
 		reqData, _ := io.ReadAll(r.Body)
+
+		fmt.Printf("invoke reminder %s of actor %s/%s with data %s\n", reminderName, actorType, actorID, string(reqData))
+
 		err := runtime.GetActorRuntimeInstanceContext().InvokeReminder(r.Context(), actorType, actorID, reminderName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)
@@ -214,6 +223,9 @@ func (s *Server) registerBaseHandler() {
 		actorType := chi.URLParam(r, "actorType")
 		actorID := chi.URLParam(r, "actorId")
 		timerName := chi.URLParam(r, "timerName")
+
+		fmt.Printf("invoke timer %s of actor %s/%s\n", timerName, actorType, actorID)
+
 		reqData, _ := io.ReadAll(r.Body)
 		err := runtime.GetActorRuntimeInstanceContext().InvokeTimer(r.Context(), actorType, actorID, timerName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
