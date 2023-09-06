@@ -15,6 +15,7 @@ package http
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -85,6 +86,7 @@ func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option
 }
 
 func (s *Server) RegisterActorImplFactoryContext(f actor.FactoryContext, opts ...config.Option) {
+	fmt.Println("registering actor factory")
 	runtime.GetActorRuntimeInstanceContext().RegisterActorFactory(f, opts...)
 }
 

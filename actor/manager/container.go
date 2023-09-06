@@ -15,6 +15,7 @@ package manager
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"reflect"
 
@@ -111,6 +112,7 @@ func (d *DefaultActorContainerContext) Invoke(ctx context.Context, methodName st
 		paramValue := reflect.New(typ)
 		paramInterface := paramValue.Interface()
 		if err := d.serializer.Unmarshal(param, paramInterface); err != nil {
+			fmt.Printf("failed to unmarshal param, err = %s\n", err)
 			return nil, actorErr.ErrActorMethodSerializeFailed
 		}
 		argsValues = append(argsValues, reflect.ValueOf(paramInterface).Elem())

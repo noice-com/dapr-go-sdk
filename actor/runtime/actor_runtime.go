@@ -16,6 +16,7 @@ package runtime
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"sync"
 
 	"github.com/dapr/go-sdk/actor"
@@ -71,6 +72,7 @@ func GetActorRuntimeInstanceContext() *ActorRunTimeContext {
 // RegisterActorFactory registers the given actor factory from user, and create new actor manager if not exists.
 func (r *ActorRunTimeContext) RegisterActorFactory(f actor.FactoryContext, opt ...config.Option) {
 	conf := config.GetConfigFromOptions(opt...)
+	fmt.Printf("build config: %+v\n", conf)
 	actType := f().Type()
 	r.config.RegisteredActorTypes = append(r.config.RegisteredActorTypes, actType)
 	if conf.Reentrancy != nil {
@@ -80,10 +82,12 @@ func (r *ActorRunTimeContext) RegisterActorFactory(f actor.FactoryContext, opt .
 	if !ok {
 		newMng, err := manager.NewDefaultActorManagerContext(conf.SerializerType)
 		if err != actorErr.Success {
+			fmt.Printf("failed to create actor manager: %v\n", err)
 			return
 		}
 		newMng.RegisterActorImplFactory(f)
 		r.actorManagers.Store(actType, newMng)
+		fmt.Printf("actor manager created: %+v\n", newMng)
 		return
 	}
 	mng.(manager.ActorManagerContext).RegisterActorImplFactory(f)

@@ -97,10 +97,12 @@ func (m *DefaultActorManager) InvokeTimer(actorID, timerName string, params []by
 }
 
 func NewDefaultActorManagerContext(serializerType string) (ActorManagerContext, actorErr.ActorErr) {
+	fmt.Printf("creating new actor manager with serializer %s\n", serializerType)
 	serializer, err := codec.GetActorCodec(serializerType)
 	if err != nil {
 		return nil, actorErr.ErrActorSerializeNoFound
 	}
+	fmt.Printf("found serializer codec %+v\n", reflect.TypeOf(serializer))
 	return &DefaultActorManagerContext{
 		serializer: serializer,
 	}, actorErr.Success
@@ -115,6 +117,7 @@ func (m *DefaultActorManagerContext) RegisterActorImplFactory(f actor.FactoryCon
 func (m *DefaultActorManagerContext) getAndCreateActorContainerIfNotExist(ctx context.Context, actorID string) (ActorContainerContext, actorErr.ActorErr) {
 	val, ok := m.activeActors.Load(actorID)
 	if !ok {
+		fmt.Printf("creating new container with serializer %s\n", reflect.TypeOf(m.serializer))
 		newContainer, aerr := NewDefaultActorContainerContext(ctx, actorID, m.factory(), m.serializer)
 		if aerr != actorErr.Success {
 			return nil, aerr
@@ -135,8 +138,10 @@ func (m *DefaultActorManagerContext) InvokeMethod(ctx context.Context, actorID, 
 	if aerr != actorErr.Success {
 		return nil, aerr
 	}
+	fmt.Println("found actor container, invoke method")
 	returnValue, aerr := actorContainer.Invoke(ctx, methodName, request)
 	if aerr != actorErr.Success {
+		fmt.Printf("failed to invoke method %s, err = %v\n", methodName, aerr)
 		return nil, aerr
 	}
 	if len(returnValue) == 1 {
